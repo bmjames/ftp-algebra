@@ -37,3 +37,5 @@ trait CommandFunctions {
     inj(CWD(directory, Return(_)))
 
 }
+
+object CommandAlgebra extends CommandInstances with CommandFunctions

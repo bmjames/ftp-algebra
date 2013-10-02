@@ -8,7 +8,7 @@ final case class User[A](username: String, h: Status => A) extends ConnectionAlg
 
 final case class Pass[A](password: String, h: Status => A) extends ConnectionAlgebra[A]
 
-final case class Quit[A]() extends ConnectionAlgebra[A]
+final case class Quit[A](h: Status => A) extends ConnectionAlgebra[A]
 
 
 trait ConnectionInstances {
@@ -19,7 +19,7 @@ trait ConnectionInstances {
         a match {
           case User(u, h) => User(u, h andThen f)
           case Pass(p, h) => Pass(p, h andThen f)
-          case Quit()     => Quit()
+          case Quit(h)    => Quit(h andThen f)
         }
     }
 
@@ -38,7 +38,9 @@ trait ConnectionFunctions {
   def pass[F[_] : Functor : Inj](password: String): Free[F, Status] =
     inj(Pass(password, Return(_)))
 
-  def quit[F[_]: Functor : Inj, A]: Free[F, A] =
-    inj(Quit())
+  def quit[F[_]: Functor : Inj]: Free[F, Status] =
+    inj(Quit(Return(_)))
 
 }
+
+object ConnectionAlgebra extends ConnectionInstances with ConnectionFunctions
