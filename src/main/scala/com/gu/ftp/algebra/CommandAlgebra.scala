@@ -7,7 +7,7 @@ sealed trait CommandAlgebra[A]
 
 final case class PWD[A](h: String => A) extends CommandAlgebra[A]
 
-final case class CWD[A](directory: String, h: Status => A) extends CommandAlgebra[A]
+final case class CWD[A](directory: String, h: Boolean => A) extends CommandAlgebra[A]
 
 
 trait CommandInstances {
@@ -33,8 +33,8 @@ trait CommandFunctions {
   def pwd[F[_] : Functor : Inj]: Free[F, String] =
     inj(PWD(Return(_)))
 
-  def cwd[F[_] : Functor : Inj](directory: String): Free[F, Status] =
-    inj(CWD(directory, Return(_)))
+  def cwd[F[_] : Functor : Inj](path: String): Free[F, Boolean] =
+    inj(CWD(path, Return(_)))
 
 }
 

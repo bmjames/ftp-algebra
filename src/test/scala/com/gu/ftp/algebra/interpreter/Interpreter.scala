@@ -1,0 +1,57 @@
+package com.gu.ftp.algebra
+package interpreter
+
+import scalaz.{Coproduct, Free, Functor, \/-, -\/}
+import scalaz.effect.IO
+import scalaz.syntax.monad._
+
+/** Interpreter implemented using the Apache Commons Net client, wrapped in scalaz.IO
+  */
+sealed abstract class Interpreter[F[_] : Functor] {
+  def runAlgebra[A](algebra: F[IO[A]], client: Client): IO[A]
+}
+
+trait InterpreterInstances {
+
+  implicit val connectionAlgebraInterpreter: Interpreter[ConnectionAlgebra] =
+    new Interpreter[ConnectionAlgebra] {
+      def runAlgebra[A](algebra: ConnectionAlgebra[IO[A]], client: Client) =
+        algebra match {
+          case LogIn(user, password, h) => client.login(user, password) >>= h
+          case Quit(h) => client.quit >>= h
+        }
+    }
+
+  implicit val commandAlgebraInterpreter: Interpreter[CommandAlgebra] =
+    new Interpreter[CommandAlgebra] {
+      def runAlgebra[A](algebra: CommandAlgebra[IO[A]], client: Client) =
+        algebra match {
+          case PWD(h) => client.pwd >>= h
+          case CWD(path, h) => client.cwd(path) >>= h
+        }
+    }
+
+  implicit def coproductAlgebraInterpreter[F[_] : Interpreter : Functor, G[_] : Interpreter : Functor]: Interpreter[({ type l[a] = Coproduct[F, G, a] })#l] = {
+    type H[A] = Coproduct[F, G, A]
+    new Interpreter[H] {
+      def runAlgebra[A](algebra: H[IO[A]], client: Client) =
+        algebra.run match {
+          case -\/(fa) => Interpreter[F].runAlgebra(fa, client)
+          case \/-(fa) => Interpreter[G].runAlgebra(fa, client)
+        }
+    }
+  }
+
+}
+
+trait InterpreterFunctions {
+  def run[A](algebra: Free[Alg, A], client: Client): IO[A] =
+    algebra.resume match {
+      case -\/(fa) => Interpreter[Alg].runAlgebra(fa.map(IO(_)), client) >>= (run(_: Free[Alg, A], client))
+      case \/-(a)  => IO(a)
+    }
+}
+
+object Interpreter extends InterpreterInstances with InterpreterFunctions {
+  def apply[F[_] : Interpreter] = implicitly[Interpreter[F]]
+}
