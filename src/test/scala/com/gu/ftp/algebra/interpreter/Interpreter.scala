@@ -17,6 +17,7 @@ trait InterpreterInstances {
     new Interpreter[ConnectionAlgebra] {
       def runAlgebra[A](algebra: ConnectionAlgebra[IO[A]], client: Client) =
         algebra match {
+          case Connect(host, port, h)   => client.connect(host, port) >>= h
           case LogIn(user, password, h) => client.login(user, password) >>= h
           case Quit(h) => client.quit >>= h
         }

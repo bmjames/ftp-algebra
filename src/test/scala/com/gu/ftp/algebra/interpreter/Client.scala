@@ -5,11 +5,11 @@ import org.apache.commons.net.ftp.{FTPFile, FTPClient}
 import scalaz.effect.IO
 import scalaz.syntax.functor._
 
-sealed trait Client {
+final class Client {
 
-  protected val client: FTPClient = new FTPClient
+  private val client: FTPClient = new FTPClient
 
-  protected def connect(host: String, port: Int): IO[Unit] =
+  def connect(host: String, port: Int): IO[Unit] =
     IO { client.connect(host, port) }
 
   def login(user: String, password: String): IO[Boolean] =
@@ -35,13 +35,4 @@ sealed trait Client {
 
   def quit: IO[Unit] =
     IO { client.quit() }
-}
-
-object Client {
-
-  def connect(host: String, port: Int = 21): IO[Client] = {
-    val client = new Client {}
-    client.connect(host, port) >| client
-  }
-
 }
