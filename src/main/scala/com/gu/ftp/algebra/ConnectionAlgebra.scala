@@ -1,6 +1,6 @@
 package com.gu.ftp.algebra
 
-import scalaz.{Free, Inject, Functor}, Free.Return, Inject.inject
+import scalaz.{:<:, Free, Inject, Functor}, Free.Return, Inject.inject
 
 sealed trait ConnectionAlgebra[A]
 
@@ -24,7 +24,7 @@ trait ConnectionInstances {
 
 trait ConnectionFunctions {
 
-  private type Inj[F[_]] = Inject[ConnectionAlgebra, F]
+  private type Inj[F[_]] = ConnectionAlgebra :<: F
 
   private def inj[F[_]: Functor : Inj, A](ga: ConnectionAlgebra[Free[F, A]]): Free[F, A] =
     inject[F, ConnectionAlgebra, A](ga)

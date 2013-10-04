@@ -4,6 +4,10 @@ import scalaz.Coproduct
 
 package object algebra {
 
+  trait :+:[F[_], G[_]] {
+    type λ[α] = Coproduct[F, G, α]
+  }
+
   type Alg[A] = Coproduct[ConnectionAlgebra, CommandAlgebra, A]
 
   object all

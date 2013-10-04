@@ -1,7 +1,7 @@
 package com.gu.ftp.algebra
 package interpreter
 
-import scalaz.{Coproduct, Free, Functor, \/-, -\/}
+import scalaz.{Free, Functor, \/-, -\/}
 import scalaz.effect.IO
 import scalaz.syntax.monad._
 
@@ -31,16 +31,14 @@ trait InterpreterInstances {
         }
     }
 
-  implicit def coproductAlgebraInterpreter[F[_] : Interpreter : Functor, G[_] : Interpreter : Functor]: Interpreter[({ type l[a] = Coproduct[F, G, a] })#l] = {
-    type H[A] = Coproduct[F, G, A]
-    new Interpreter[H] {
-      def runAlgebra[A](algebra: H[IO[A]], client: Client) =
+  implicit def coproductAlgebraInterpreter[F[_] : Interpreter : Functor, G[_] : Interpreter : Functor]: Interpreter[(F:+:G)#λ] =
+    new Interpreter[(F:+:G)#λ] {
+      def runAlgebra[A](algebra: (F:+:G)#λ[IO[A]], client: Client) =
         algebra.run match {
           case -\/(fa) => Interpreter[F].runAlgebra(fa, client)
           case \/-(fa) => Interpreter[G].runAlgebra(fa, client)
         }
     }
-  }
 
 }
 

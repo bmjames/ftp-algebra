@@ -1,7 +1,7 @@
 package com.gu.ftp
 package algebra
 
-import scalaz.{Functor, Free, Inject}, Free.Return, Inject.inject
+import scalaz.{:<:, Functor, Free, Inject}, Free.Return, Inject.inject
 
 sealed trait CommandAlgebra[A]
 
@@ -25,7 +25,7 @@ trait CommandInstances {
 
 trait CommandFunctions {
 
-  private type Inj[F[_]] = Inject[CommandAlgebra, F]
+  private type Inj[F[_]] = CommandAlgebra :<: F
 
   private def inj[F[_]: Functor : Inj, A](ga: CommandAlgebra[Free[F, A]]): Free[F, A] =
     inject[F, CommandAlgebra, A](ga)
