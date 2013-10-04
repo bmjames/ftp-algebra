@@ -26,8 +26,9 @@ trait InterpreterInstances {
     new Interpreter[CommandAlgebra] {
       def runAlgebra[A](algebra: CommandAlgebra[IO[A]], client: Client) =
         algebra match {
-          case PWD(h) => client.pwd >>= h
+          case PWD(h)       => client.pwd >>= h
           case CWD(path, h) => client.cwd(path) >>= h
+          case ListFiles(h) => client.listFiles map (_.map(_.getName)) >>= h
         }
     }
 
