@@ -44,10 +44,7 @@ trait InterpreterInstances {
 
 trait InterpreterFunctions {
   def run[A](algebra: Free[Alg, A], client: Client): IO[A] =
-    algebra.resume match {
-      case -\/(fa) => Interpreter[Alg].runAlgebra(fa.map(IO(_)), client) >>= (run(_: Free[Alg, A], client))
-      case \/-(a)  => IO(a)
-    }
+    algebra.runM(fa => Interpreter[Alg].runAlgebra(fa.map(IO(_)), client))
 }
 
 object Interpreter extends InterpreterInstances with InterpreterFunctions {
