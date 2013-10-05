@@ -1,5 +1,5 @@
-This library aims to implement an algebra for FTP commands, assembled using coproducts of functors as described in
-Wouter Swierstra's [Data types à la carte][1].
+This library aims to implement an algebra for specifying interaction with an FTP server, assembled using coproducts of
+functors as described in Wouter Swierstra's [Data types à la carte][1].
 
 The inspiration for this library, and its design, owe a great deal to Eric Thul's [redis-algebra][2].
 
