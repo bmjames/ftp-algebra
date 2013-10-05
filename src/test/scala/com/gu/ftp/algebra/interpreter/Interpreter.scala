@@ -29,7 +29,12 @@ trait InterpreterInstances {
         algebra match {
           case PWD(h)       => client.pwd >>= h
           case CWD(path, h) => client.cwd(path) >>= h
-          case ListFiles(h) => client.listFiles map (_.map(_.getName)) >>= h
+          case ListFiles(h) =>
+            val files = client.listFiles.map(fs =>
+                          fs.map(f => File(f.getName,
+                                           f.isDirectory,
+                                           f.getTimestamp.getTimeInMillis)))
+            client.enterLocalPassiveMode >> files >>= h
         }
     }
 

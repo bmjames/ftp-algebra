@@ -5,11 +5,13 @@ import scalaz.{:<:, Functor, Free, Inject}, Free.Return, Inject.inject
 
 sealed trait CommandAlgebra[A]
 
-final case class PWD[A](h: String => A) extends CommandAlgebra[A]
+case class PWD[A](h: String => A) extends CommandAlgebra[A]
 
-final case class CWD[A](directory: String, h: Boolean => A) extends CommandAlgebra[A]
+case class CWD[A](directory: String, h: Boolean => A) extends CommandAlgebra[A]
 
-final case class ListFiles[A](h: List[String] => A) extends CommandAlgebra[A]
+case class ListFiles[A](h: List[File] => A) extends CommandAlgebra[A]
+
+case class File(name: String, isDirectory: Boolean, lastModified: Long)
 
 trait CommandInstances {
 
@@ -19,7 +21,7 @@ trait CommandInstances {
         a match {
           case PWD(h)    => PWD(h andThen f)
           case CWD(d, h) => CWD(d, h andThen f)
-          case ListFiles(h)   => ListFiles(h andThen f)
+          case ListFiles(h) => ListFiles(h andThen f)
         }
     }
 
@@ -38,7 +40,7 @@ trait CommandFunctions {
   def cwd[F[_] : Functor : Inj](path: String): Free[F, Boolean] =
     inj(CWD(path, Return(_)))
 
-  def list[F[_]: Functor : Inj]: Free[F, List[String]] =
+  def list[F[_]: Functor : Inj]: Free[F, List[File]] =
     inj(ListFiles(Return(_)))
 
 }

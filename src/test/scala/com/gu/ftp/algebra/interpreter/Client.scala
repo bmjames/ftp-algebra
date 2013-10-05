@@ -3,7 +3,6 @@ package com.gu.ftp.algebra.interpreter
 import java.io.OutputStream
 import org.apache.commons.net.ftp.{FTPFile, FTPClient}
 import scalaz.effect.IO
-import scalaz.syntax.functor._
 
 final class Client {
 

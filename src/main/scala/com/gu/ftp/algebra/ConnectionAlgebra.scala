@@ -4,12 +4,11 @@ import scalaz.{:<:, Free, Inject, Functor}, Free.Return, Inject.inject
 
 sealed trait ConnectionAlgebra[A]
 
-final case class Connect[A](host: String, port: Int, h: Unit => A) extends ConnectionAlgebra[A]
+case class Connect[A](host: String, port: Int, h: Unit => A) extends ConnectionAlgebra[A]
 
-final case class LogIn[A](user: String, password: String, h: Boolean => A) extends ConnectionAlgebra[A]
+case class LogIn[A](user: String, password: String, h: Boolean => A) extends ConnectionAlgebra[A]
 
-final case class Quit[A](h: Unit => A) extends ConnectionAlgebra[A]
-
+case class Quit[A](h: Unit => A) extends ConnectionAlgebra[A]
 
 trait ConnectionInstances {
 
