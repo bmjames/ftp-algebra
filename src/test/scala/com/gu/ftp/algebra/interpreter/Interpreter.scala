@@ -15,7 +15,7 @@ trait InterpreterInstances {
 
   implicit val connectionAlgebraInterpreter: Interpreter[ConnectionAlgebra] =
     new Interpreter[ConnectionAlgebra] {
-      def runAlgebra[A](algebra: ConnectionAlgebra[IO[A]], client: Client) =
+      def runAlgebra[A](algebra: ConnectionAlgebra[IO[A]], client: Client): IO[A] =
         algebra match {
           case Connect(host, port, h)   => client.connect(host, port) >>= h
           case LogIn(user, password, h) => client.login(user, password) >>= h
@@ -25,16 +25,32 @@ trait InterpreterInstances {
 
   implicit val commandAlgebraInterpreter: Interpreter[CommandAlgebra] =
     new Interpreter[CommandAlgebra] {
-      def runAlgebra[A](algebra: CommandAlgebra[IO[A]], client: Client) =
+      def runAlgebra[A](algebra: CommandAlgebra[IO[A]], client: Client): IO[A] =
         algebra match {
           case PWD(h)       => client.pwd >>= h
           case CWD(path, h) => client.cwd(path) >>= h
+        }
+    }
+
+  implicit val receiveInterpreter: Interpreter[ReceiveAlgebra] =
+    new Interpreter[ReceiveAlgebra] {
+      def runAlgebra[A](algebra: ReceiveAlgebra[IO[A]], client: Client): IO[A] =
+        algebra match {
           case ListFiles(h) =>
             val files = client.listFiles.map(fs =>
-                          fs.map(f => File(f.getName,
-                                           f.isDirectory,
-                                           f.getTimestamp.getTimeInMillis)))
+              fs.map(f => File(f.getName,
+                f.isDirectory,
+                f.getTimestamp.getTimeInMillis)))
             client.enterLocalPassiveMode >> files >>= h
+          case RetrieveToFile(name, localFile, h) =>
+            val action = for {
+              _      <- client.enterLocalPassiveMode
+              _      <- client.setBinaryFileType
+              output <- IO(new java.io.FileOutputStream(localFile))
+              _      <- client.retrieveFile(name, output)
+              _      <- IO(output.close())
+            } yield ()
+            action >>= h
         }
     }
 
@@ -51,7 +67,7 @@ trait InterpreterInstances {
 
 trait InterpreterFunctions {
   def run[A](algebra: Free[Alg, A], client: Client): IO[A] =
-    algebra.runM(fa => Interpreter[Alg].runAlgebra(fa.map(IO(_)), client))
+    algebra.runM[IO](fa => Interpreter[Alg].runAlgebra(fa.map(IO(_)), client))
 }
 
 object Interpreter extends InterpreterInstances with InterpreterFunctions {

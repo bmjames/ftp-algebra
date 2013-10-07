@@ -1,7 +1,7 @@
 package com.gu.ftp.algebra.interpreter
 
 import java.io.OutputStream
-import org.apache.commons.net.ftp.{FTPFile, FTPClient}
+import org.apache.commons.net.ftp.{FTP, FTPFile, FTPClient}
 import scalaz.effect.IO
 
 final class Client {
@@ -23,10 +23,13 @@ final class Client {
   def enterLocalPassiveMode: IO[Unit] =
     IO { client.enterLocalPassiveMode() }
 
+  def setBinaryFileType: IO[Unit] =
+    IO { client.setFileType(FTP.BINARY_FILE_TYPE) }
+
   def listFiles: IO[List[FTPFile]] =
     IO { client.listFiles.toList }
 
-  def retrieveFile(path: String)(output: OutputStream): IO[Boolean] =
+  def retrieveFile(path: String, output: OutputStream): IO[Boolean] =
     IO { client.retrieveFile(path, output) }
 
   def completePendingCommand: IO[Unit] =

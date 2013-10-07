@@ -8,10 +8,12 @@ package object algebra {
     type λ[α] = Coproduct[F, G, α]
   }
 
-  type Alg[A] = Coproduct[ConnectionAlgebra, CommandAlgebra, A]
+  type Alg0[A] = Coproduct[ConnectionAlgebra, CommandAlgebra, A]
+  type Alg[A] = Coproduct[ReceiveAlgebra, Alg0, A]
 
   object all
     extends ConnectionInstances with ConnectionFunctions
     with CommandInstances with CommandFunctions
+    with ReceiveInstances with ReceiveFunctions
 
 }
