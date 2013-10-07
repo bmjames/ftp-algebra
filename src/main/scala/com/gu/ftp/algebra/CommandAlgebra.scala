@@ -9,6 +9,8 @@ case class PWD[A](h: String => A) extends CommandAlgebra[A]
 
 case class CWD[A](directory: String, h: Boolean => A) extends CommandAlgebra[A]
 
+case class Delete[A](path: String, h: Boolean => A) extends CommandAlgebra[A]
+
 
 trait CommandInstances {
 
@@ -18,6 +20,7 @@ trait CommandInstances {
         a match {
           case PWD(h)    => PWD(h andThen f)
           case CWD(d, h) => CWD(d, h andThen f)
+          case Delete(p, h) => Delete(p, h andThen f)
         }
     }
 
@@ -35,6 +38,9 @@ trait CommandFunctions {
 
   def cwd[F[_] : Functor : InjCommand](path: String): Free[F, Boolean] =
     inj(CWD(path, Return(_)))
+
+  def delete[F[_] : Functor : InjCommand](path: String): Free[F, Boolean] =
+    inj(Delete(path, Return(_)))
 
 }
 

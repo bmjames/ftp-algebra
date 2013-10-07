@@ -32,6 +32,9 @@ final class Client {
   def retrieveFile(path: String, output: OutputStream): IO[Boolean] =
     IO { client.retrieveFile(path, output) }
 
+  def delete(path: String): IO[Boolean] =
+    IO { client.deleteFile(path) }
+
   def completePendingCommand: IO[Unit] =
     IO { client.completePendingCommand() }
 

@@ -29,6 +29,7 @@ trait InterpreterInstances {
         algebra match {
           case PWD(h)       => client.pwd >>= h
           case CWD(path, h) => client.cwd(path) >>= h
+          case Delete(path, h) => client.delete(path) >>= h
         }
     }
 
