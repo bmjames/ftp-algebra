@@ -67,8 +67,8 @@ trait InterpreterInstances {
 }
 
 trait InterpreterFunctions {
-  def run[A](algebra: Free[Alg, A], client: Client): IO[A] =
-    algebra.runM[IO](fa => Interpreter[Alg].runAlgebra(fa.map(IO(_)), client))
+  def run[F[_] : Functor : Interpreter, A](algebra: Free[F, A], client: Client): IO[A] =
+    algebra.runM[IO](fa => Interpreter[F].runAlgebra(fa.map(IO(_)), client))
 }
 
 object Interpreter extends InterpreterInstances with InterpreterFunctions {
